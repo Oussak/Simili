@@ -1,2 +1,6 @@
 credentials.py
 .DS_Store
+*.xlsx
+*.env
+*.csv
+*.json
