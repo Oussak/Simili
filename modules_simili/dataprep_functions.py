@@ -64,22 +64,8 @@ def transform_json_to_dataframe(data):
     return pd.DataFrame(rows)
 
 
-# Data pipeline 3: add new column correspond to the content of the new version of the article 
-def add_column_with_articles_new_content(df):
-    """
-    Ajoute une colonne "Contenu_Nouv_Vers_Article" à un DataFrame en appliquant une fonction à une autre colonne.
-    """
-    df['Contenu_Nouv_Vers_Article'] = df.apply(
-        lambda x: getArticle(x['ID Article Cible']), axis=1)
-    return df
-
-# Data pipeline 4: add new column correspond to the content of the old version of the article 
-def add_column_with_articles_new_content(df):
-    """
-    Ajoute une colonne "Contenu_Ancien_Article" à un DataFrame en appliquant une fonction à l ID artcile.
-    """
-    df['Contenu_Ancien_Article'] = df.apply(
-        lambda x: getArticle_prev_vers(x['ID Article Cible']), axis=1)
-    return df 
-
-# Data pipline 5 : 
+# Data pipeline 3: compare ancien vs nouvelle version du texte
+def compare_AV_vs_NV(df):
+    df['Compare contenu'] = df.apply(
+    lambda row: "Contenu Similaire" if row['Contenu_Nouv_Vers_Article'] == row['Contenu_Ancien_Article'] else "OK change",
+    axis=1)
