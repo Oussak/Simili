@@ -1,22 +1,33 @@
 
 import requests
+from modules_simili.get_token import get_token
+ 
+access_token = get_token()
 
-
-# Call 1.1: ping pong test
+# Call 1 - ping pong test
 def ping_pong_test(access_token): 
     headers_1 = {'accept': 'text/plain', 'Authorization': 'Bearer ' + access_token}
     output = requests.get("https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/ping", headers=headers_1).text
     return output
-    
-## Call bellow to full fill the table with additional content :
-# Call 1.2 : Get content of previous version of an article (version 2)
+
+# Call 2 - API call to build the main table: 
+# Récupère une version (plage de dates) d'un texte (textCid) et version en vigueur (date) 
+
+def get_text_modif_byDateslot_textCid_extract_content(access_token, textCid, startYear, endYear): #LEGITEXT000006073984 code des assurances
+  headers = { 'accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + access_token}
+  data = {  "endYear": endYear,  #"dateConsult": "2021-04-15",
+  "startYear": startYear,
+  "textCid": textCid  }
+  url = 'https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/chrono/textCid'
+  response = requests.post(url, headers=headers, json=data)
+  response_json= response.json()
+  return  response_json
+
+
+# Call 3 : Get content of previous version of an article (version 2)
 
 def getArticle_prev_vers(id: str):
-    headers = {
-        'accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + access_token
-    }
+    headers = {'accept': 'application/json','Content-Type': 'application/json','Authorization': 'Bearer ' + access_token}
     url = 'https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/getArticle'
 
     try:
@@ -61,13 +72,9 @@ def getArticle_prev_vers(id: str):
         print(f"Erreur : {e}")
         return "KO"
     
-# Call 1.3 : Get content new version of an article (version 2)
+# Call 4 - Get content new version of an article (version 2)
 def getArticle(id: str):
-    headers = {
-        'accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + access_token
-    }
+    headers = {'accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + access_token}
     url = 'https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/getArticle'
     data = {"id": id}
 
@@ -91,17 +98,17 @@ def getArticle(id: str):
         print(f"Erreur : {e}")
         return "KO autre"
 
-# Bellow API call to build the main table: 
-# Call 1.4 : Récupère une version (plage de dates) d'un texte (textCid) et version en vigueur (date) 
+# Call 4 - Building the column Contenu_Nouv_Vers_Article for the NEW content of an article 
 
-def get_text_modif_byDateslot_textCid_extract_content(access_token, textCid, startYear, endYear): #LEGITEXT000006073984 code des assurances
-  headers = { 'accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + access_token}
-  data = {  "endYear": endYear,  #"dateConsult": "2021-04-15",
-  "startYear": startYear,
-  "textCid": textCid  }
-  url = 'https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/chrono/textCid'
-  response = requests.post(url, headers=headers, json=data)
-  response_json= response.json()
-  return  response_json
+def ajout_col_coutenu_NV(df):
+    df['Contenu_Nouv_Vers_Article'] = df.apply( lambda x: getArticle( x['ID Article Cible']), axis=1)
+
+    
+# Call 5 - Building the column Contenu_Ancien_Article for the OLD content of an article
+
+def ajout_col_AV(df):
+    df['Contenu_Ancien_Article'] = df.apply( lambda x: getArticle_prev_vers(x['ID Article Cible']), axis=1)
+
+    
 
   
