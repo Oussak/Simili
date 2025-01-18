@@ -49,10 +49,11 @@ try:
 except Exception as e:
     print("Échec 5: Échec, une erreur est survenue lors du Call. Détails : {e}")
 
-#Step 6: Exporting
+#Step 6: Exporting database 1
 try:
     panda_output.to_excel("data_output/Output.xlsx")
-    print("Etape 3: Fichier Excel a été exporté avec succès !")
+    print("Etape 6: Fichier Excel a été exporté avec succès !")
 except Exception as e:
-    print(f"Etape 3: Échec : Une erreur est survenue lors de l'enregistrement. Détails : {e}")
+    print(f"Etape 6: Échec : Une erreur est survenue lors de l'enregistrement. Détails : {e}")
 
+# Step 7 : Building junction database 
