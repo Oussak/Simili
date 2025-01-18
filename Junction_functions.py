@@ -5,7 +5,8 @@ from modules_simili.get_token import get_token
 import requests
 from requests_oauthlib import OAuth2Session
 from SPARQLWrapper import SPARQLWrapper, JSON
-
+from firecrawl import FirecrawlApp
+from credentials import *
 
 
 access_token = get_token()
@@ -45,3 +46,39 @@ def get_celex(textCid :str): #JORFTEXT000042636234
   return response_json['nor']
 
 # Step 4: get text from Eurlex with Sparql in Cellar database 
+def celextourl_data(endpoint_url, celex_id):
+
+    # Préparer la requête SPARQL
+    query = f"""
+    PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+    SELECT ?property ?value
+    WHERE {{
+      ?acte cdm:resource_legal_id_celex "{celex_id}"^^xsd:string ;
+            ?property ?value .
+    }}
+    """
+    # Initialiser le wrapper SPARQL
+    sparql = SPARQLWrapper(endpoint_url) #inject url endpoint
+    sparql.setQuery(query)               # inject query
+    sparql.setReturnFormat(JSON)          # set in json format
+    results = sparql.query().convert()   # run
+    return results
+
+# Step 5: extract celex from Cellar output 
+def extract_celex_link(data):
+    return next(
+        (item['value']['value'] for item in data['results']['bindings']
+         if 'value' in item and 'value' in item['value'] and 'http://publications.europa.eu/resource/celex/' in item['value']['value']),
+        None
+    )
+
+#Step 6: Scrape a website: with firecraw
+
+api_key_firecraw = "1b2bc67fc7734320ba9135983d78d4e3"
+def scrape_w_firecraw(lien_directive): 
+    app = FirecrawlApp(api_key=api_key_firecraw)
+    scrape_result= app.scrape_url(lien_directive, params={'formats': ['markdown', 'html']})
+    return scrape_result
+
