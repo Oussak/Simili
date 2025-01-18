@@ -11,7 +11,7 @@ if ping_pong_test(access_token) == 'pong':
 
 # Step 1: Retreiving data from Léfifrance  
 try: 
-    json_output =  get_text_modif_byDateslot_textCid_extract_content(access_token, "LEGITEXT000006073984", "2019", "2020")
+    json_output =  get_text_modif_byDateslot_textCid_extract_content(access_token, "LEGITEXT000006072026", "2020", "2021")
     print("Etape 1: Requête API LégiFrance")
 except Exception as e:
     print("Échec : Une erreur est survenue lors du Call. Détails : {e}")
