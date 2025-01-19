@@ -5,7 +5,7 @@ from modules_simili.dataprep_functions import *
 
 access_token = get_token()
 
-# Test co
+# Test connection 
 if ping_pong_test(access_token) == 'pong':
     print("Successful ping pong test")
 
@@ -56,4 +56,3 @@ try:
 except Exception as e:
     print(f"Etape 6: Échec : Une erreur est survenue lors de l'enregistrement. Détails : {e}")
 
-# Step 7 : Building junction database 
