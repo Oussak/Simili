@@ -99,13 +99,11 @@ def getArticle(id: str):
         return "KO autre"
 
 # Call 4 - Building the column Contenu_Nouv_Vers_Article for the NEW content of an article 
-
 def ajout_col_coutenu_NV(df):
     df['Contenu_Nouv_Vers_Article'] = df.apply( lambda x: getArticle( x['ID Article Cible']), axis=1)
 
     
 # Call 5 - Building the column Contenu_Ancien_Article for the OLD content of an article
-
 def ajout_col_AV(df):
     df['Contenu_Ancien_Article'] = df.apply( lambda x: getArticle_prev_vers(x['ID Article Cible']), axis=1)
 
