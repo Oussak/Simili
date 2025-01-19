@@ -79,5 +79,5 @@ def scrape_w_firecraw(lien_directive):
     scrape_result= app.scrape_url(lien_directive, params={'formats': ['markdown']})
     return scrape_result
 
-
+## Step 7: Combine all functions to get celex from article modificateur (art ordonnance )
 
