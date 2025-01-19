@@ -51,7 +51,7 @@ except Exception as e:
 
 #Step 6: Exporting database 1
 try:
-    panda_output.to_excel("data_output/Output.xlsx")
+    panda_output.to_excel("data_output/DB_Legifrance.xlsx")
     print("Etape 6: Fichier Excel a été exporté avec succès !")
 except Exception as e:
     print(f"Etape 6: Échec : Une erreur est survenue lors de l'enregistrement. Détails : {e}")
