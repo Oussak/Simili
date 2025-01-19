@@ -1,13 +1,12 @@
 import os
-from dotenv import load_dotenv
 import json
-from modules_simili.get_token import get_token
 import requests
+from dotenv import load_dotenv
+from modules_simili.get_token import get_token
 from requests_oauthlib import OAuth2Session
 from SPARQLWrapper import SPARQLWrapper, JSON
 from firecrawl import FirecrawlApp
-from credentials import *
-
+from credentials import api_key_firecraw
 
 access_token = get_token()
 
@@ -47,7 +46,6 @@ def get_celex(textCid :str): #JORFTEXT000042636234
 
 # Step 4: get text from Eurlex with Sparql in Cellar database 
 def celextourl_data(endpoint_url, celex_id):
-
     # Préparer la requête SPARQL
     query = f"""
     PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
@@ -75,10 +73,10 @@ def extract_celex_link(data):
     )
 
 #Step 6: Scrape a website: with firecraw
-
-api_key_firecraw = "1b2bc67fc7734320ba9135983d78d4e3"
 def scrape_w_firecraw(lien_directive): 
     app = FirecrawlApp(api_key=api_key_firecraw)
-    scrape_result= app.scrape_url(lien_directive, params={'formats': ['markdown', 'html']})
+    scrape_result= app.scrape_url(lien_directive, params={'formats': ['markdown']})
     return scrape_result
+
+
 
