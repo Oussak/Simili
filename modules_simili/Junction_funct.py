@@ -10,6 +10,7 @@ from credentials import api_key_firecraw
 
 access_token = get_token()
 
+## Script to get from Article modificateur (article d'ordonnance) to Celex (in Eurlex) 
 # Step 1: get dossier legislatif
 # Article modificateur d'un article d'ordonnance vers dossier législatif (via ordonnance):
 def get_doss_legi(textId, date): 
