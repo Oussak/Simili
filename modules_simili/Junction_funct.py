@@ -116,18 +116,21 @@ def get_directives_list_vprod(id):
  # Step 2: get list of directives
 # De dossier législatif aux numéros de directives
 def get_directive_id(textes):
-    """
-    Parcourt une liste de dictionnaires (chacun contenant un 'idTexte' et un 'libelleTexte')
-    et renvoie l'idTexte de la première entrée dont le libelleTexte contient le mot 'directive'.
-
-    :param textes: Liste de dictionnaires, chacun doit comporter les clés 'idTexte' et 'libelleTexte'.
-    :return: L'idTexte (str) de la première "Directive" trouvée, ou None si aucune n'est trouvée.
-    """
     for item in textes:
         # Vérification insensible à la casse
         if 'directive' in item['libelleTexte'].lower():
             return item['idTexte']
     return None
+
+def get_directive_id_v2(textes):
+    directive_ids = []
+
+    for item in textes:
+        # Vérification insensible à la casse pour le mot 'directive'
+        if 'directive' in item['libelleTexte'].lower():
+            directive_ids.append(item['idTexte'])  # Ajouter l'idTexte à la liste
+
+    return directive_ids  # Retourne la liste, vide si aucune directive n'est trouvée
 
 # Step 3: get Celex of directive from JORF
 # De numéros de directives a Celex de directives
