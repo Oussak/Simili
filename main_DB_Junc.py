@@ -46,13 +46,15 @@ Junction_DB['ID directive'] = Junction_DB.apply(
 print("Step 7 : data prep col")
 
 # Step 8: data prep col liste directives
-import pandas as pd
-split_and_duplicate(Junction_DB, "ID directive")
-print("Step 8 : data prep col")
+Junction_DB= duplicate_rows_with_multiple_ids(Junction_DB, "ID directive")
+print("Step 7 : explode col")
 
-# Step 8: add celex 
+# Step 9: add celex 
 
-# Junction_DB['Celex'] = Junction_DB.apply(lambda row: get_celex_v2(row['dossier_legislatif']), axis=1)
+
+# Step 10: add celex 
+Junction_DB['Celex'] = Junction_DB.apply(lambda row: get_celex_v2(row['ID directive']), axis=1)
+print("Step 7 : add Celex")
 
 # Step 9: Export database Junction_DB
 Junction_DB.to_excel("data_output/Junction_DB.xlsx")

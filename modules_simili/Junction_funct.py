@@ -132,7 +132,11 @@ def get_directive_id_v2(textes):
 
     return directive_ids  # Retourne la liste, vide si aucune directive n'est trouvée
 
+import pandas as pd
 
+def duplicate_rows_with_multiple_ids(df, column):
+    df[column] = df[column].apply(lambda x: x if isinstance(x, list) else [x])  # S'assurer que les valeurs sont des listes
+    return df.explode(column, ignore_index=True)
 
 # Step 3: get Celex of directive from JORF
 # De numéros de directives a Celex de directives
@@ -149,25 +153,17 @@ def get_celex(textCid :str): #JORFTEXT000042636234
 
 def get_celex_v2(textCid: str):
     url = 'https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/jorf'
-    headers = {
-        'accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + access_token
-    }
+    headers = { 'accept': 'application/json','Content-Type': 'application/json', 'Authorization': 'Bearer ' + access_token}
     data = {"searchedString": "", "textCid": textCid}
-
     try:
         # Effectuer la requête POST
         response = requests.post(url=url, headers=headers, json=data)
         response.raise_for_status()  # Vérifie si une erreur HTTP a eu lieu
-        
         # Tenter de parser la réponse en JSON
         response_json = response.json()
-
         # Vérifie si la clé 'nor' est présente dans la réponse
         if 'nor' not in response_json:
             raise KeyError("La clé 'nor' est absente de la réponse.")
-
         return response_json['nor']
 
     except requests.exceptions.RequestException as e:
