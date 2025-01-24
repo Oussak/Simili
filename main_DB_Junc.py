@@ -42,6 +42,7 @@ Junction_DB['ID directive'] = Junction_DB.apply(
 
 
 # Step 8: add celex 
+
 # Junction_DB['Celex'] = Junction_DB.apply(lambda row: get_celex_v2(row['dossier_legislatif']), axis=1)
 
 # Step 9: Export database Junction_DB

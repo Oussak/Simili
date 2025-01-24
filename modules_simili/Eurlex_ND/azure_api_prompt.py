@@ -55,3 +55,39 @@ def html_json(html):
       temperature = 0
     )    
     return response.choices[0].message.content
+
+def html_json_tcd(html,label_ligne):
+    os.environ["AZURE_OPENAI_DeploymentId"] = "gpt4o"
+    client = AzureOpenAI(
+        azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT"), 
+        api_key=os.getenv("AZURE_OPENAI_KEY"),  
+        api_version="2024-03-01-preview",
+
+    )
+    exemple_output = '''
+    {
+        "Extraction": "Article 1er, paragraphe 3",
+        "contenu": les personnes physiques ou morales suivantes, agissant dans l'exercice de leur activité professionnelle." 
+    }
+    '''
+    response = client.chat.completions.create(
+      model=os.getenv("AZURE_OPENAI_DeploymentId"), # model = "deployment_name".
+      response_format={ "type": "json_object" },
+      messages=[
+          {"role": "system", "content": f'''Tu es un extracteur de texte juridique en json, tu ne dois vraiment renvoyer que le json et seulement l'intérieur comme cet exemple: {exemple_output}
+           Si on te demande un article entier, tu dois alors mettre la totalité de l'article dans le contenu, cependant si on te demande un point spécifique d'un article alors tu devra mettre dans le contenu seulement le sous point de l'article concerné
+           Pour t'aider, voici la définition non exhaustive des différents éléments que l'on risque de te donner : 
+            -   Paragraphe : 
+                    -   Symbole : 1., 2. ...
+                    -   Observations : Sous-ensemble autonome d'un article
+            -   Alinéa :
+                    -   Symbole : Néant 
+                    -   Observation : Element non autonome d'un article ou paragraphe complexe
+            -   Point :
+                    -   Symbole : a), b), 1), 2), i), ii)..
+                    -   Observation : Généralement précédés d'un "chapeau"'''},
+          {"role": "user", "content": f"Peux tu me ressortir {label_ligne} de ce texte : {html}"},
+      ],
+      temperature = 0
+    )    
+    return response.choices[0].message.content
