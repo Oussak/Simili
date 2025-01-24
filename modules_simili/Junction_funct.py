@@ -132,6 +132,8 @@ def get_directive_id_v2(textes):
 
     return directive_ids  # Retourne la liste, vide si aucune directive n'est trouvée
 
+
+
 # Step 3: get Celex of directive from JORF
 # De numéros de directives a Celex de directives
 

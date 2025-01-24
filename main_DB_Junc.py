@@ -31,20 +31,24 @@ print("Step 4 : add Titre Dossier legislatif")
 
 # Step 5: unique
 Junction_DB = Junction_DB.drop_duplicates(subset='Titre Dossier legislatif')
-print("Step 4 : Unique Value")
+print("Step 5 : Unique Value")
 
 # Step 6: add liste directives
 Junction_DB['Liste directives'] = Junction_DB.apply(
     lambda row: get_directives_list_vprod(row['N° dossier legislatif'] ),
     axis=1)
+print("Step 6 : add liste directives")
 
 # Step 7: data prep col liste directives
 Junction_DB['ID directive'] = Junction_DB.apply(
     lambda row: get_directive_id_v2(row['Liste directives'] ),
     axis=1)
+print("Step 7 : data prep col")
 
 # Step 8: data prep col liste directives
-
+import pandas as pd
+split_and_duplicate(Junction_DB, "ID directive")
+print("Step 8 : data prep col")
 
 # Step 8: add celex 
 

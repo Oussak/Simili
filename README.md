@@ -1,9 +1,9 @@
-# Regulatory Changes Tracker with Légifrance API
+# Regulatory Changes Tracker with Légifrance API and Eurlex
 
 ## Goal(s)
 
 
-This project leverages the Légifrance API to automate the tracking of regulatory changes in French law. It monitors modifications in laws, decrees, and other regulatory sources published on Légifrance, providing analysis and reports on significant updates.
+This project leverages the Légifrance API and Eurlex to automate the tracking of regulatory changes in French law. It monitors modifications in laws, decrees, and other regulatory sources published on Légifrance, providing analysis and reports on significant updates.
 
 ## Feature(s)
 
@@ -12,7 +12,7 @@ This project leverages the Légifrance API to automate the tracking of regulator
 
 ## Prerequisites
 
-Python 3.7+
+Python 3.13.0
 
 Légifrance API Key: An API key is required to access the Légifrance API. 
 
