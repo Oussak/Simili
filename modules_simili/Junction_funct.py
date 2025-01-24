@@ -3,35 +3,131 @@ import json
 import requests
 from dotenv import load_dotenv
 from modules_simili.get_token import get_token
+from modules_simili.get_token import get_token_prod
 from requests_oauthlib import OAuth2Session
 from SPARQLWrapper import SPARQLWrapper, JSON
 from firecrawl import FirecrawlApp
-from credentials import api_key_firecraw
+from credentials import *
 
 access_token = get_token()
+acess_token_prod = get_token_prod()
 
 ## Script to get from Article modificateur (article d'ordonnance) to Celex (in Eurlex) 
 
-# Step 1: get dossier legislatif
-# Article modificateur d'un article d'ordonnance vers dossier législatif (via ordonnance):
-def get_doss_legi(textId, date): 
-  url = 'https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/legiPart'
-  headers = {'accept': 'application/json','Content-Type': 'application/json', 'Authorization': 'Bearer ' + access_token}
-  data = { #"searchedString":"constitution 1958",
-        "date": date,
-        "textId":textId }
-  response = requests.post(url= url, headers =headers, json= data )
-  return response.json()["dossiersLegislatifs"][0]['id']
+# Step 1 : get_doss_legi --  Sandbow version 
+def get_doss_legi_id(textId, date):
+    url = 'https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/legiPart'
+    headers = {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {access_token}'}
+    data = {"date": date,"textId": textId }
+    try:
+        response = requests.post(url=url, headers=headers, json=data)
+        response.raise_for_status()  # Vérifie les erreurs HTTP (4xx ou 5xx)
+        return response.json()["dossiersLegislatifs"][0]['id']
+    except requests.RequestException as e:
+        print(f"Erreur de requête : {e} pour textId={textId} et date={date}.")
+        return None
+    except (KeyError, IndexError):
+        print(f"L'identifiant n'a pas pu être récupéré pour textId={textId} et date={date}.")
+        return None
+    
+# Step 1 : get_doss_legi --  Production version 
+def get_doss_legi_id_prod(textId, date):
+    url = 'https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/legiPart'
+    headers = {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {acess_token_prod}'}
+    data = {"date": date,"textId": textId }
+    try:
+        response = requests.post(url=url, headers=headers, json=data)
+        response.raise_for_status()  # Vérifie les erreurs HTTP (4xx ou 5xx)
+        return response.json()["dossiersLegislatifs"][0]['id']
+    except requests.RequestException as e:
+        print(f"Erreur de requête : {e} pour textId={textId} et date={date}.")
+        return None
+    except (KeyError, IndexError):
+        print(f"L'identifiant n'a pas pu être récupéré pour textId={textId} et date={date}.")
+        return None
+    
+    
+# Step 3 : get_doss_titre --  Sandbox version 
+def get_doss_legi_titre(textId, date):
+    url = 'https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/legiPart'
+    headers = {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {access_token}'}
+    data = {"date": date,"textId": textId }
+    try:
+        response = requests.post(url=url, headers=headers, json=data)
+        response.raise_for_status()  # Vérifie les erreurs HTTP (4xx ou 5xx)
+        return response.json()["dossiersLegislatifs"][0]['titre']
+    except requests.RequestException as e:
+        print(f"Erreur de requête : {e} pour textId={textId} et date={date}.")
+        return None
+    except (KeyError, IndexError):
+        print(f"L'identifiant n'a pas pu être récupéré pour textId={textId} et date={date}.")
+        return None
 
-# Step 2: get list of directives
+# Step 3 : get_doss_titre --  Prod version 
+def get_doss_legi_titre_prod(textId, date):
+    url = 'https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/legiPart'
+    headers = {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {acess_token_prod}'}
+    data = {"date": date,"textId": textId }
+    try:
+        response = requests.post(url=url, headers=headers, json=data)
+        response.raise_for_status()  # Vérifie les erreurs HTTP (4xx ou 5xx)
+        return response.json()["dossiersLegislatifs"][0]['titre']
+    except requests.RequestException as e:
+        print(f"Erreur de requête : {e} pour textId={textId} et date={date}.")
+        return None
+    except (KeyError, IndexError):
+        print(f"L'identifiant n'a pas pu être récupéré pour textId={textId} et date={date}.")
+        return None
+
+# Step 4: get dossier legislatif - Sandox version 
+def get_directives_list(textId): 
+  url = 'https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/dossierLegislatif'
+  headers = {'accept': 'application/json','Content-Type': 'application/json', 'Authorization': 'Bearer ' + access_token}
+  data = { "textId":textId }
+  response = requests.post(url= url, headers =headers, json= data )
+  reponse_json = response.json()
+  return reponse_json
+
+# Step 4: get dossier legislatif - prod version 
+def get_directives_list_vprod(id):
+    url = 'https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/dossierLegislatif'  # URL de production
+    headers = {'accept': 'application/json','Content-Type': 'application/json','Authorization': 'Bearer ' + acess_token_prod  }
+    data = {"id":id}
+    response = requests.post(url=url, headers=headers, json=data)
+    response_json = response.json()
+    if response_json.get('status') == 'Internal Server Error':
+        return "" 
+    else:
+        return response_json['dossierLegislatif']['dossiers']
+
+
+ # Step 2: get list of directives
 # De dossier législatif aux numéros de directives
-def dossierLegislatif(id): 
-	headers = {'accept': 'application/json','Content-Type': 'application/json','Authorization': 'Bearer ' + access_token}
-	url = 'https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/dossierLegislatif'
-	data = {"id":id}
-	reponse = requests.post(headers = headers , url= url, json= data)
-	reponse_json = reponse.json()
-	return reponse_json['dossierLegislatif']['dossiers']
+def get_directive_id(textes):
+    """
+    Parcourt une liste de dictionnaires (chacun contenant un 'idTexte' et un 'libelleTexte')
+    et renvoie l'idTexte de la première entrée dont le libelleTexte contient le mot 'directive'.
+
+    :param textes: Liste de dictionnaires, chacun doit comporter les clés 'idTexte' et 'libelleTexte'.
+    :return: L'idTexte (str) de la première "Directive" trouvée, ou None si aucune n'est trouvée.
+    """
+    for item in textes:
+        # Vérification insensible à la casse
+        if 'directive' in item['libelleTexte'].lower():
+            return item['idTexte']
+    return None
 
 # Step 3: get Celex of directive from JORF
 # De numéros de directives a Celex de directives
@@ -116,29 +212,3 @@ def scrape_w_firecraw(lien_directive):
     return scrape_result
 
 ## Step 7: Combine all functions to get celex from article modificateur (art ordonnance )
-def get_doss_legi_v2(textId, date):
-    try:
-        url = 'https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/legiPart'
-        headers = {
-            'accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + access_token
-        }
-        data = {"date": date, "textId": textId}
-
-        response = requests.post(url=url, headers=headers, json=data)
-        response.raise_for_status()  # Vérifiez les erreurs HTTP
-
-        # Vérifiez si la réponse contient "dossiersLegislatifs"
-        dossiers = response.json().get("dossiersLegislatifs", [])
-        if dossiers:
-            return dossiers[0]['id']
-        else:
-            print(f"Aucun dossier trouvé pour textId={textId}, date={date}")
-            return None
-    except requests.RequestException as e:
-        print(f"Erreur de requête : {e} pour textId={textId}, date={date}")
-        return None
-    except (KeyError, IndexError) as e:
-        print(f"Erreur JSON : {e} pour textId={textId}, date={date}")
-        return None
