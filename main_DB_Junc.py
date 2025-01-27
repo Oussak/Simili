@@ -49,7 +49,7 @@ print("Step 7 : data prep col")
 Junction_DB= duplicate_rows_with_multiple_ids(Junction_DB, "ID directive")
 print("Step 7 : explode col")
 
-# Step 9: add celex 
+# Step 9: supp  
 
 
 # Step 10: add celex 
