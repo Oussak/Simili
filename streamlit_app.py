@@ -28,7 +28,7 @@ st.markdown(
 
 st.markdown(
     """
-    <p style='font-size: 15px; color: #333; max-width: 1000; line-height: 1.5;'>
+    <p style='font-size: 15px; color: #333; max-width: 1300; line-height: 1.5;'>
         Une solution pour le suivi des amendements des textes français, d’aide à la transposition
         des textes européens et de génération de rapports de synthèses personnalisables.
     </p>

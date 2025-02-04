@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import io
 
-# ----- Import des modules nécessaires -----
+
 from modules_simili.get_token import get_token, get_token_prod
 from modules_simili.LegiFR_call_funct import *
 from modules_simili.dataprep_funct import *

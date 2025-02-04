@@ -109,7 +109,3 @@ def main():
         except Exception as e:
             st.error(f"Étape 6 - Échec : {e}")
             return
-
-
-if __name__ == "__main__":
-    main()

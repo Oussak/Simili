@@ -170,7 +170,7 @@ def wrap_up_multi(text_to_summarize, audience: str, detail_level:str):
     5.  Inclu les références de textes réglementaires. 
 
 
-	Variables :
+	Paramètres choisis par l'utilisateur :
 	•	Niveau de détail : {detail_level} (valeurs possibles : “succinct” ou “détaillé”)
 	•	Public cible : {audience} (valeurs possibles : “professionnel” ou “tout public”)
 
