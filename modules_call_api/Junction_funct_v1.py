@@ -1,6 +1,9 @@
 import os
 import json
 import requests
+import pandas as pd
+import ast
+
 from dotenv import load_dotenv
 from modules_call_api.get_token import get_token
 from modules_call_api.get_token import get_token_prod
@@ -14,13 +17,14 @@ acess_token_prod = get_token_prod()
 
 ## Script to get from Article modificateur (article d'ordonnance) to Celex (in Eurlex) 
 
-# Step 1 : get_doss_legi --  Sandbow version 
+# Step 1 : get_doss_legi -- Sandbox version
+
 def get_doss_legi_id(textId, date):
     url = 'https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/legiPart'
     headers = {
         'accept': 'application/json',
         'Content-Type': 'application/json',
-        'Authorization': f'Bearer {access_token}'}
+        'Authorization': f'Bearer {acess_token_prod}'}
     data = {"date": date,"textId": textId }
     try:
         response = requests.post(url=url, headers=headers, json=data)
@@ -53,13 +57,13 @@ def get_doss_legi_id_prod(textId, date):
         return None
     
     
-# Step 3 : get_doss_titre --  Sandbox version 
+# Step : get_doss_titre --  Sandbox version 
 def get_doss_legi_titre(textId, date):
     url = 'https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/legiPart'
     headers = {
         'accept': 'application/json',
         'Content-Type': 'application/json',
-        'Authorization': f'Bearer {access_token}'}
+        'Authorization': f'Bearer {acess_token_prod}'}
     data = {"date": date,"textId": textId }
     try:
         response = requests.post(url=url, headers=headers, json=data)
@@ -72,7 +76,7 @@ def get_doss_legi_titre(textId, date):
         print(f"L'identifiant n'a pas pu être récupéré pour textId={textId} et date={date}.")
         return None
 
-# Step 3 : get_doss_titre --  Prod version 
+# Step : get_doss_titre --  Prod version 
 def get_doss_legi_titre_prod(textId, date):
     url = 'https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/legiPart'
     headers = {
@@ -91,16 +95,16 @@ def get_doss_legi_titre_prod(textId, date):
         print(f"L'identifiant n'a pas pu être récupéré pour textId={textId} et date={date}.")
         return None
 
-# Step 4: get dossier legislatif - Sandox version 
+# Step 2: get dossier legislatif - Sandox version 
 def get_directives_list(textId): 
   url = 'https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/dossierLegislatif'
-  headers = {'accept': 'application/json','Content-Type': 'application/json', 'Authorization': 'Bearer ' + access_token}
+  headers = {'accept': 'application/json','Content-Type': 'application/json', 'Authorization': 'Bearer ' + acess_token_prod}
   data = { "textId":textId }
   response = requests.post(url= url, headers =headers, json= data )
   reponse_json = response.json()
   return reponse_json
 
-# Step 4: get dossier legislatif - prod version 
+# Step 2: get dossier legislatif - prod version 
 def get_directives_list_vprod(id):
     url = 'https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/dossierLegislatif'  # URL de production
     headers = {'accept': 'application/json','Content-Type': 'application/json','Authorization': 'Bearer ' + acess_token_prod  }
@@ -113,7 +117,7 @@ def get_directives_list_vprod(id):
         return response_json['dossierLegislatif']['dossiers']
 
 
- # Step 2: get list of directives
+ # Step 3: get list of directives
 # De dossier législatif aux numéros de directives
 def get_directive_id(textes):
     for item in textes:
@@ -132,11 +136,62 @@ def get_directive_id_v2(textes):
 
     return directive_ids  # Retourne la liste, vide si aucune directive n'est trouvée
 
-import pandas as pd
-
 def duplicate_rows_with_multiple_ids(df, column):
     df[column] = df[column].apply(lambda x: x if isinstance(x, list) else [x])  # S'assurer que les valeurs sont des listes
     return df.explode(column, ignore_index=True)
+
+
+import requests
+import ast
+
+def get_directives_list_vprod_vtest(id):
+    """
+    Récupère la liste des dossiers législatifs depuis l'API Legifrance et extrait les idTexte
+    des textes qui contiennent le mot "Directive" dans leur libellé.
+
+    Args:
+        id (str): Identifiant du dossier législatif.
+
+    Returns:
+        list: Liste des 'idTexte' correspondant aux textes contenant "Directive".
+    """
+    url = 'https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/dossierLegislatif'
+    headers = {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + acess_token_prod
+    }
+    data = {"id": id}
+
+    try:
+        response = requests.post(url=url, headers=headers, json=data)
+        response.raise_for_status()  # Vérifie les erreurs HTTP (4xx, 5xx)
+        response_json = response.json()
+
+        # Vérifier si l'API a retourné une erreur
+        if response_json.get('status') == 'Internal Server Error':
+            return []  
+
+        # Extraire les dossiers législatifs
+        dossiers = response_json.get('dossierLegislatif', {}).get('dossiers', [])
+
+        # Extraire les idTexte contenant "Directive"
+        directive_ids = []
+        for dossier in dossiers:
+            textes = dossier.get("textes", [])
+            for texte in textes:
+                if "Directive" in texte.get("libelleTexte", ""):
+                    directive_ids.append(texte.get("idTexte"))
+
+        return directive_ids
+
+    except requests.RequestException as e:
+        print(f"❌ Erreur API : {e}")
+        return []
+    except (KeyError, IndexError):
+        print(f"⚠️ Problème avec la structure JSON reçue pour id={id}")
+        return []
+
 
 # Step 3: get Celex of directive from JORF
 # De numéros de directives a Celex de directives

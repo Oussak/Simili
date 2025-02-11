@@ -1,4 +1,4 @@
-from modules_data_eng.Junction_funct import *
+from modules_call_api.Junction_funct_v1 import *
 from modules_call_api.get_token import *
 import pandas as pd 
 import requests
@@ -9,6 +9,7 @@ acess_token_prod = get_token_prod()
 # Step 1: Import Legifrance database
 database_FR = pd.read_excel("~/Desktop/Simili_2/data_output/Output.xlsx")
 print("Step 1 : Importing Database ")
+
 # Construction de la base de données junction 
 # Step 2: Filtrer les lignes où 'Titre Article Modificateur' commence par "ordonnance"
 Junction_DB = (
@@ -17,6 +18,7 @@ Junction_DB = (
     ][['ID Article Modificateur', 'Titre Article Modificateur', 'Version du']]
     .drop_duplicates(subset=['ID Article Modificateur']))
 print("Step 2 : Filtring")
+
 # Step 3: add dossier_legislatif id list 
 Junction_DB['N° dossier legislatif'] = Junction_DB.apply(
     lambda row: get_doss_legi_id_prod(row['ID Article Modificateur'], row['Version du']),

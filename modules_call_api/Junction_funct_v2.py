@@ -5,12 +5,13 @@ import json
 
 from requests_oauthlib import OAuth2Session
 from SPARQLWrapper import SPARQLWrapper, JSON
-from get_token import get_token_prod
-
+from modules_call_api.get_token import *
 
 acess_token_prod = get_token_prod()
 
+
 # Step 1: get dossier legislatif - from LegiFr 
+
 def get_doss_legi(textId:str, date:str):
     """LegiFrance Call API pour passer de l'article modificateur d'une ordonnance a un dossier légis
      
@@ -87,7 +88,9 @@ def get_directives_list(textId):
         print(f"L'identifiant n'a pas pu être récupéré pour textId={textId} .")
         return None
 
+
 # Step 4: get url of the directive - from LegiFr 
+
 def get_celex_full(textCid :str):
     """Function LegiFr from num de directive au numéro Celex
 
@@ -108,9 +111,10 @@ def get_celex_full(textCid :str):
 
 
 # Step 5: get url from celex - From Eurlex
+
 def celextourl_data(celex_id):
     """
-    Function Eurlex from Celex to url 
+    Function Eurlex from Celex to URL 
     """
 
     query = f"""

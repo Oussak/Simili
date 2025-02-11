@@ -24,7 +24,7 @@ load_dotenv()
 # Titre centré et stylisé
 st.markdown(
     """
-    <h1 style='text-align: center; color: navy;'>S i m i l i</h1>
+    <h1 style='text-align: center; color: navy;'> S i m i l i (dev) </h1>    
     """,
     unsafe_allow_html=True
 )
@@ -86,6 +86,10 @@ if active_llm == "Oui":
     llm_limit = st.selectbox("LLM limite (nbr de lignes):", options=[10, 20, 30])
     audience = st.selectbox("Sélectionnez le type d'audience pour l'analyse juridique:", options=["Tout Public", "Professionnel"])
     detail = st.selectbox("Sélectionnez le niveau de détail :", options= ["Succinct", "Détaillé"])
+
+# Activation brique Europeenne 
+
+ue_data = st.radio("Souhaitez vous enrichir les résultats avec les textes européens ayant servis à la transposition ?  ", ("Non", "Oui"))
 
 
 # Bouton exécution
@@ -172,7 +176,6 @@ if st.button("Lancer le tracker"):
     except Exception as e:
         st.error(f"Étape 5 - Échec : {e}")
 
-
     # Ajout colonne comparative
     
     try:
@@ -181,30 +184,78 @@ if st.button("Lancer le tracker"):
     
     except Exception as e:
         st.error(f"Étape 6 - Échec : {e}")
+    
+    
+    ## Add Celex     
+    if ue_data == "Oui":    
+    # Step 1: extraction de l'ID du dossier legistif 
+        try:
+            panda_output['ID DossLegis'] = panda_output.apply( lambda x: get_doss_legi_id_prod(x["ID Article Modificateur"], 
+                                x["Date de début cible"]), axis=1)
+            st.success("Ajout données UE - Étape 1: réussie")
+        except Exception as e:
+            st.error(f"Ajout données UE - Étape 1: Échec : {e}")
+
+        # Step 2: extraction de la liste des directives et autres 
+        try: 
+            panda_output['Liste directives'] = panda_output.apply(
+        lambda row: get_directives_list_vprod(row['ID DossLegis'] ),axis=1)
+            st.success("Ajout données UE - Étape 2: réussie")
         
-## Add Celex 
-    # Step 1: 
-    try:
-        panda_output['ID DossLegis'] = panda_output.apply( lambda x: get_doss_legi_id_prod(x["ID Article Modificateur"], 
-                              x["Date de début cible"]), axis=1)
-    except Exception as e:
-        st.error(f"Étape Add celex step 1 - Échec : {e}")
+        except Exception as e:
+            st.error(f"Ajout données UE - Étape 2: Échec : {e}")
 
-    # Step 2: 
+        # Step 3: selection unique des ID des directives 
+        try:
+            panda_output['ID directives'] = panda_output.apply(
+        lambda row: get_directive_id_v2(row['Liste directives'] ),axis=1)
+            st.success("Ajout données UE - Étape 3: réussie")
+            
+        except Exception as e:
+            st.error(f"Ajout données UE - Étape 3: Échec : {e}")
+        
+        # Step 4: explode col des directives
 
-    try:
-        panda_output['Lists of lists Directives v1'] = panda_output.apply( lambda x: get_directives_list(x["ID DossLegis"]), axis=1)
-    except Exception as e:
-        st.error(f"Étape Add celex step 2 v1 - Échec : {e}")
+        def explode_directives(df, column_name):
+            df["ID directive 1"] = df[column_name].apply(lambda x: x[0] if len(x) > 0 else None)
+            df["ID directive 2"] = df[column_name].apply(lambda x: x[1] if len(x) > 1 else None)  
+            return df
+        
+        try:
+            panda_output = explode_directives(panda_output, 'ID directives' )
+            st.success("Ajout données UE - Étape 4: réussie")
+            
+        except Exception as e:
+            st.error(f"Ajout données UE - Étape 4: Échec : {e}")
+            
+        # Step 5: get Celex
+        
+        try:
+            panda_output['Celex 1'] = panda_output.apply(lambda row: get_celex_v2(row['ID directive 1']), axis=1)
+            panda_output['Celex link 1'] = panda_output.apply(lambda row: 'http://publications.europa.eu/resource/celex/'+ str(row['Celex 1']), axis =1)
 
-    # Step 3:      
-    try:
-        panda_output['Lists of lists Directives v2'] = panda_output.apply( lambda x: get_directives_list_vprod_vtest(x["ID DossLegis"]), axis=1)
-    except Exception as e:
-        st.error(f"Étape Add celex step 2 v2- Échec : {e}")
+            panda_output['Celex 2'] = panda_output.apply(lambda row: get_celex_v2(row['ID directive 2']), axis=1)
+            panda_output['Celex link 2'] = panda_output.apply(lambda row: 'http://publications.europa.eu/resource/celex/'+ str(row['Celex 2']), axis =1)
+        
+            st.success("Ajout données UE - Étape 5: réussie")
+            
+        except Exception as e:
+            st.error(f"Ajout données UE - Étape 5: Échec : {e}") 
 
 
-           
+        # Step 6: cleaning dataframe
+        
+        try:
+            panda_output.drop(['ID DossLegis', 'Liste directives', 'ID directives',
+                            'ID directive 1' ,'ID directive 2'] ,axis =1,
+                            inplace= True)
+            st.success("Ajout données UE - Étape 6: réussie")
+            
+        except Exception as e:
+            st.error(f"Ajout données UE - Étape 6: Échec : {e}")      
+    
+    else: st.success("Absence d'ajout de données UE pour la transposition (choix utilisateur)") 
+    
     # LLM analysis /com
     
     try:
@@ -223,7 +274,7 @@ if st.button("Lancer le tracker"):
             st.success("Étape 7 - Analyse juridique réussie")
             st.write(f""" {summary}""")
         else:  
-            st.success("Étape 7 - Absence de comparaison")
+            st.success("Absence de comparaison (choix utilisateur)")
         
     except Exception as e:
         st.error(f"Étape 7 - Échec : {e}")
