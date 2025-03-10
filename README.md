@@ -1,25 +1,29 @@
-# Regulatory Changes Tracker with Légifrance API and Eurlex
+# Simili
 
 ## Goal(s)
 
-
-This project leverages the Légifrance API and Eurlex to automate the tracking of regulatory changes in French law. It monitors modifications in laws, decrees, and other regulatory sources published on Légifrance, providing analysis and reports on significant updates.
+Ce projet vise a utiliser l'API Légifrance et Eurlex pour aider au suivi des changements réglementaires en droit français a travers le suivi des modifications apportées aux lois, décrets et autres sources réglementaires et en fournissant des analyses des changements.
 
 ## Feature(s)
 
-
-- Law Text Tracking: Extract and compare versions of law texts to detect changes.
+Suivi des textes législatifs : extraction et comparaison des différentes versions des textes législatifs afin de détecter les changements.
 
 ## Prerequisites
 
 Python 3.13.0
 
-Légifrance API Key: An API key is required to access the Légifrance API. 
+Clé d’API Légifrance : Une clé d’API est nécessaire pour accéder à l’API de Légifrance.
 
-Register on the Légifrance Developer Portal to obtain an API key: https://piste.gouv.fr
+Inscrivez-vous sur le portail développeur de Légifrance pour obtenir une clé d’API : https://piste.gouv.fr
 
 
 ## Other upcomming features
-- Automated Reports: Generate reports on regulatory changes, including update dates, modified articles, and new provisions.
-- Change Alerts: Receive notifications on specific text updates or changes within specific areas of interest.
-- Evolution Visualization: Track the historical progression of texts to observe legislative evolution over time.
+- Construction base de données
+- Requetage sur base de données
+- Optimisation des calls avec parralélisation 
+- Synthèse plus détaillée avec références
+- Intégrer modifications Christine
+- Utilisation d'autres modèles
+- Intégration test unitaire
+- CI/CD
+
