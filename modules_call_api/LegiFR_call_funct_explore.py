@@ -5,17 +5,10 @@ import json
 # Call 2.1: Get article by ELI
 
 """
-    Eli - Identifiant Européen de la Législation:
-Permet d'identifier de façon unique les documents législatifs et réglementaires au sein de la base de données de Légifrance.
-Déclinaison :
-/eli : Préfixe indiquant qu'il s'agit d'un identifiant ELI.
-/decret : Type de texte (ici un décret) peut aussi être un arrêté, une loi, ou d'autres types d'actes normatifs...
-/2021/7/13 : Date de publication ou adoption (13 juillet 2021 dans cet exemple).
-/PRMD2117108D : Numéro unique du décret
-/jo : Indication que le document a été publié dans le Journal Officiel.
-/article_1 : Référence à un article spécifique dans le document (ici l'article 1).
+Eli - Identifiant Européen de la Législation:
 """
 def get_article_byELI(idEliOrAlias):
+    
   headers_2 = {"accept": "application/json","Content-Type": "application/json", 'Authorization': 'Bearer ' + access_token}
   data = {"idEliOrAlias": idEliOrAlias } # exemple: "/eli/decret/2021/7/13/PRMD2117108D/jo/article_1"
   url= "https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/getArticleWithIdEliOrAlias"
@@ -117,9 +110,9 @@ def legipart(textId, date): # LEGITEXT000006075116 2021-04-15
   return response.json()
 
 # Call 2.6: get all_versions of an article by cid 
-    """
+"""
     Pour trouver et récup JORF ordonnance Exemple: https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000042636234
-    """
+"""
     
 def getJOFR(textCid :str): #JORFTEXT000042636234
   url= 'https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/jorf'
@@ -207,10 +200,10 @@ def get_code(textId,sctCid,abrogated, date):
 
 # CAll 2.11: 
 
-    """
+"""
     Récupère un extrait (section ou article) d'une version spécifique d'un texte à partir des identifiants du texte (textCid) 
     et de l'extrait section ou article: "elementCid"
-    """
+"""
 def textCidAndElementCid(textCid, elementCid): # text cid: LEGITEXT000006072050 Element Cid LEGIARTI000006901817
   url = "https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/chrono/textCidAndElementCid"
   headers = {

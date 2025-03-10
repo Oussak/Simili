@@ -1,5 +1,5 @@
-from modules_simili.Junction_funct import *
-from modules_simili.get_token import *
+from modules_data_eng.Junction_funct import *
+from modules_call_api.get_token import *
 import pandas as pd 
 import requests
 

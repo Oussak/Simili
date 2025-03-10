@@ -1,24 +1,26 @@
 
 import requests
-from modules_simili.get_token import get_token
- 
+from modules_call_api.get_token import get_token, get_token_prod
+
 access_token = get_token()
+access_token_prod = get_token_prod()
 
 # Call 1 - ping pong test
-def ping_pong_test(access_token): 
-    headers_1 = {'accept': 'text/plain', 'Authorization': 'Bearer ' + access_token}
-    output = requests.get("https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/ping", headers=headers_1).text
+def ping_pong_test_prod(): 
+    headers_1 = {'accept': 'text/plain', 'Authorization': 'Bearer ' + access_token_prod}
+    output = requests.get("https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/ping", headers=headers_1).text
     return output
 
 # Call 2 - API call to build the main table: 
 # Récupère une version (plage de dates) d'un texte (textCid) et version en vigueur (date) 
 
-def get_text_modif_byDateslot_textCid_extract_content(access_token, textCid, startYear, endYear): #LEGITEXT000006073984 code des assurances
-  headers = { 'accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + access_token}
+def get_text_modif_byDateslot_textCid_extract_content_prod(access_token, textCid, startYear, endYear): 
+	#LEGITEXT000006073984 code des assurances
+  headers = { 'accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + access_token_prod}
   data = {  "endYear": endYear,  #"dateConsult": "2021-04-15",
   "startYear": startYear,
   "textCid": textCid  }
-  url = 'https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/chrono/textCid'
+  url = 'https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/chrono/textCid'
   response = requests.post(url, headers=headers, json=data)
   response_json= response.json()
   return  response_json
@@ -26,9 +28,9 @@ def get_text_modif_byDateslot_textCid_extract_content(access_token, textCid, sta
 
 # Call 3 : Get content of previous version of an article (version 2)
 
-def getArticle_prev_vers(id: str):
-    headers = {'accept': 'application/json','Content-Type': 'application/json','Authorization': 'Bearer ' + access_token}
-    url = 'https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/getArticle'
+def getArticle_prev_vers_prod(id: str):
+    headers = {'accept': 'application/json','Content-Type': 'application/json','Authorization': 'Bearer ' + access_token_prod}
+    url = 'https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/getArticle'
 
     try:
         # Requête initiale pour obtenir les versions de l'article
@@ -73,9 +75,9 @@ def getArticle_prev_vers(id: str):
         return "KO"
     
 # Call 4 - Get content new version of an article (version 2)
-def getArticle(id: str):
-    headers = {'accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + access_token}
-    url = 'https://sandbox-api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/getArticle'
+def getArticle_prod(id: str):
+    headers = {'accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + access_token_prod}
+    url = 'https://api.piste.gouv.fr/dila/legifrance/lf-engine-app/consult/getArticle'
     data = {"id": id}
 
     try:
@@ -99,13 +101,13 @@ def getArticle(id: str):
         return "KO autre"
 
 # Call 4 - Building the column Contenu_Nouv_Vers_Article for the NEW content of an article 
-def ajout_col_coutenu_NV(df):
-    df['Contenu_Nouv_Vers_Article'] = df.apply( lambda x: getArticle( x['ID Article Cible']), axis=1)
+def ajout_col_coutenu_NV_prod(df):
+    df['Contenu_Nouv_Vers_Article'] = df.apply( lambda x: getArticle_prod( x['ID Article Cible']), axis=1)
 
     
 # Call 5 - Building the column Contenu_Ancien_Article for the OLD content of an article
-def ajout_col_AV(df):
-    df['Contenu_Ancien_Article'] = df.apply( lambda x: getArticle_prev_vers(x['ID Article Cible']), axis=1)
+def ajout_col_AV_prod(df):
+    df['Contenu_Ancien_Article'] = df.apply( lambda x: getArticle_prev_vers_prod(x['ID Article Cible']), axis=1)
 
     
 

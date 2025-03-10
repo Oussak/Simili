@@ -2,8 +2,8 @@ import os
 import json
 import requests
 from dotenv import load_dotenv
-from modules_simili.get_token import get_token
-from modules_simili.get_token import get_token_prod
+from modules_call_api.get_token import get_token
+from modules_call_api.get_token import get_token_prod
 from requests_oauthlib import OAuth2Session
 from SPARQLWrapper import SPARQLWrapper, JSON
 from firecrawl import FirecrawlApp

@@ -1,22 +1,24 @@
+# imports standards 
+import io
+from dotenv import load_dotenv
+
+# imports tiers 
 import streamlit as st
 import pandas as pd
-import io
-import os
-from dotenv import load_dotenv
-from langchain_community.callbacks.manager import get_openai_callback
+
+# Import API calls
+from modules_call_api.LegiFR_call_funct import *
+from modules_call_api.LegiFR_call_prod_funct import *
+from modules_call_api.get_token import *
+
+# Import DE funct
+from modules_data_eng.dataprep_funct import *
+
+# Import LLM funct
+from modules_llm.LLM_Analytic_changes import *
 
 
 load_dotenv()
-
-
-# Import fonctions
-from modules_simili.LegiFR_call_funct import *
-from modules_simili.LegiFR_call_prod_funct import *
-from modules_simili.dataprep_funct import *
-from modules_llm.LLM_Analytic_changes import *
-from modules_simili.get_token import *
-
-
 
 # Titre centré et stylisé
 st.markdown(
@@ -37,6 +39,7 @@ st.markdown(
 )
 
 # Étape 1 : Sélection du Code Juridique
+
 codes = {
     "Code monétaire et financier": "LEGITEXT000006072026",
     "Code civil": "LEGITEXT000006070721",
@@ -56,29 +59,38 @@ codes = {
 selected_code = st.selectbox("Sélectionnez un code juridique :", options=list(codes.keys()))
 textCid = codes[selected_code]
 
-# Étape 2 : Intervalle d'années
+
+# Étape 2 : input dates 
+
 annee_debut = st.text_input("Entrez la date de début (année ou format JJ-MM-AAAA) :", value="2020")
 annee_fin = st.text_input("Entrez la date de fin (année ou format JJ-MM-AAAA) :", value="2021")
 
+
 # Filtrage sur N° de décret / ordonnance / loi
+
 filtrer_numero = st.radio("Voulez-vous filtrer sur un N° de décret / ordonnance / loi ?", ("Non", "Oui"))
 
-numero_1, numero_2 = None, None
+numero_1 = ""
+
 if filtrer_numero == "Oui":
-    numero_1 = st.text_input("Entrez le premier numéro de décret / ordonnance / loi :", value="n°2020-115")
-    numero_2 = st.text_input("Entrez le deuxième numéro de décret / ordonnance / loi :", value="n°2020-1544")
+    numero_1 = st.text_input("Entrez un numéro de décret / ordonnance / loi ou mot clé :",
+                             value="Ordonnance n°2020-115").strip()
+
 
 # Activation brique LLM
-Active_LLM = st.radio("Voulez vous avoir une analyse des changements de chaque article suivi d'un résumé des 10 premiers changements ?  ", ("Non", "Oui"))
 
-if Active_LLM == "Oui":
+active_llm = st.radio("Voulez vous avoir une analyse des changements de chaque article suivi d'un résumé global des changements ?  ", ("Non", "Oui"))
+
+if active_llm == "Oui":
+    llm_limit = st.selectbox("LLM limite (nbr de lignes):", options=[10, 20, 30])
     audience = st.selectbox("Sélectionnez le type d'audience pour l'analyse juridique:", options=["Tout Public", "Professionnel"])
     detail = st.selectbox("Sélectionnez le niveau de détail :", options= ["Succinct", "Détaillé"])
 
+
 # Bouton exécution
-if st.button("Lancer simili"):
+
+if st.button("Lancer le tracker"):
     try:
-        #access_token = get_token() sandbox API call functions
         access_token_prod = get_token_prod()
 
         st.success("Étape 0 - Récupération du token réussie")
@@ -86,11 +98,13 @@ if st.button("Lancer simili"):
         st.error(f"Erreur lors de la récupération du token : {e}")
 
     # Test Ping Pong
+    
     try:
-        if ping_pong_test(access_token) == 'pong':
+        if ping_pong_test_prod() == 'pong':
             st.success("Test Ping Pong : connexion réussie")
         else:
             st.error("Test Ping Pong : échec de connexion")
+            st.stop()
     except Exception as e:
         st.error(f"Erreur lors du test Ping Pong : {e}")
 
@@ -100,66 +114,97 @@ if st.button("Lancer simili"):
             access_token_prod, textCid, annee_debut, annee_fin
         )
         st.success("Étape 1 - Requête API LégiFrance effectuée avec succès")
+    
     except Exception as e:
         st.error(f"Étape 1 - Échec : {e}")
-
-    # Formatage  données
+    
     try:
+        # Formatage  données
         panda_output = transform_json_to_dataframe(json_output)
-        panda_output = panda_output.drop('Est la dernière version', axis=1)
+        
+        # DataFrame Cleaning + prepare
+        panda_output.drop(['Version du',
+                           'Année',
+                           'Est la dernière version',
+                           'Nature Article Modificateur',
+                           'ID Parent', 'Nom Parent',
+                           'Date de fin (Article Cible)',
+                           'Date de début cible Article Modificateur',
+                           'CID Parent'
+                           ], axis=1, inplace = True)
+        panda_output.rename(columns={"Date de début cible d'entrée en vigueur": "Date de début cible",
+                                     "Action Article Modificateur":"Action" }, inplace= True)
         panda_output.reset_index(drop=True, inplace=True)
         st.success(f"Étape 2 - Formatage des données réussi : {len(panda_output)} lignes créées")
+    
     except Exception as e:
         st.error(f"Étape 2 - Échec : {e}")
         
-    #  Filtrage par N° de décret / ordonnance / loi
-    try:
-        if filtrer_numero == "Oui":
-            panda_output = panda_output[
-                panda_output["Titre Article Modificateur"].astype(str).str.contains( numero_1, na=False, case=False ) |
-                panda_output["Titre Article Modificateur"].astype(str).str.contains( numero_2, na=False, case=False )
-            ]
-            st.success(f"Étape 3 - Filtrage appliqué : {len(panda_output)} lignes gardées")
-        else:
-            st.success("Étape 3 - Aucun filtrage sur les numéros appliqué")
-    except Exception as e:
-        st.error(f"Étape 3 - Erreur lors du filtrage : {e}")
         
+    #  Filtrage par N° de décret / ordonnance / loi
+
+    try:
+        if numero_1 :
+            panda_output = panda_output[panda_output["Titre Article Modificateur"].astype(str).str.contains(numero_1, na=False, case=False)]
+            st.success(f"Filtrage appliqué : {len(panda_output)} lignes gardées")
+        else:
+            st.success(" Aucun filtrage appliqué, toutes les données sont affichées.")
+
+    except Exception as e:
+        st.error(f"Erreur lors du filtrage : {e}")
+
     # Ajout l'ancien contenu
+    
     try:
         ajout_col_AV_prod(panda_output)
         st.success("Étape 4 - Ajout de l'ancienne version des articles réussi")
+    
     except Exception as e:
         st.error(f"Étape 4 - Échec : {e}")
 
     # Ajout nouveau contenu
+    
     try:
         ajout_col_coutenu_NV_prod(panda_output)
-        st.success("Étape 5 - Ajout de l'ancienne version des articles réussi")
+        st.success("Étape 5 - Ajout de la nouvelle version des articles réussi")
+    
     except Exception as e:
         st.error(f"Étape 5 - Échec : {e}")
 
+
     # Ajout colonne comparative
+    
     try:
         compare_AV_vs_NV(panda_output)
         st.success("Étape 6 - Ajout de la colonne de comparaison réussi")
+    
     except Exception as e:
         st.error(f"Étape 6 - Échec : {e}")
         
-    # LLM 
+        
+    # LLM analysis /com
+    
     try:
-        if Active_LLM == "Oui":
-            st.success("Étape 7 - Lancement de l'analyse des textes juridiques par le LLM (10 premiers changements) ")
-            panda_output = llm_apply_row(panda_output.iloc[0:10,:])
+        if active_llm == "Oui":
+            st.success(f"Étape 7 - Lancement de l'analyse des textes juridiques par le LLM ({llm_limit} premiers changements) ")
+            
+            # Applying LLM function:
+            panda_output = llm_apply_row(panda_output.iloc[0:llm_limit,:])
+            
+            # Concate all LLM commentaries 
             text_variable = panda_output['LLM_Change_Analysis_1'].str.cat()
+            
+            # WapUp LLM analysis 
             summary = wrap_up_multi(text_variable, audience, detail)
+            
             st.success("Étape 7 - Analyse juridique réussie")
             st.write(f""" {summary}""")
-        else :  
+        else:  
             st.success("Étape 7 - Absence de comparaison")
         
     except Exception as e:
         st.error(f"Étape 7 - Échec : {e}")
+
 
     # Export en mémoire et téléchargement
     try:
@@ -168,11 +213,9 @@ if st.button("Lancer simili"):
             panda_output.to_excel(writer, index=False, sheet_name='Données')
         st.success("Étape 8 - Fichier Excel préparé pour téléchargement")
 
-        #st.write("Aperçu du résumé :")
-        #st.text(f"{text_file}")
         st.write(f"Aperçu du tableau des modifications du {selected_code} de {annee_debut} a/au {annee_fin}")
-        st.dataframe(panda_output.head(10))
         
+        st.dataframe(panda_output.head(15))
 
         st.download_button(
             label="Télécharger le fichier Excel",

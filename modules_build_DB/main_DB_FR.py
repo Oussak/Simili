@@ -1,7 +1,7 @@
-from modules_simili.get_token import get_token
+from modules_call_api.get_token import get_token
 from credentials import client_id, client_secret
-from modules_simili.LegiFR_call_funct import *
-from modules_simili.dataprep_funct import *
+from modules_call_api.LegiFR_call_funct import *
+from modules_data_eng.dataprep_funct import *
 
 access_token = get_token()
 
