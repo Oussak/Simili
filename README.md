@@ -4,9 +4,6 @@
 
 Ce projet vise a utiliser l'API Légifrance et Eurlex pour aider au suivi des changements réglementaires en droit français a travers le suivi des modifications apportées aux lois, décrets et autres sources réglementaires et en fournissant des analyses des changements.
 
-## Feature(s)
-
-Suivi des textes législatifs : extraction et comparaison des différentes versions des textes législatifs afin de détecter les changements.
 
 ## Prerequisites
 
