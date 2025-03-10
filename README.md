@@ -18,12 +18,4 @@ Inscrivez-vous sur le portail développeur de Légifrance pour obtenir une clé 
 
 
 ## Other upcomming features
-- Construction base de données
-- Requetage sur base de données
-- Optimisation des calls avec parralélisation 
-- Synthèse plus détaillée avec références
-- Intégrer modifications Christine
-- Utilisation d'autres modèles
-- Intégration test unitaire
-- CI/CD
 
