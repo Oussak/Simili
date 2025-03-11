@@ -108,7 +108,7 @@ def get_celex_full(textCid :str):
 
 
 # Step 5: get url from celex - From Eurlex
-def celextourl_data(endpoint_url, celex_id):
+def celextourl_data(celex_id):
     """
     Function Eurlex from Celex to url 
     """
@@ -123,10 +123,8 @@ def celextourl_data(endpoint_url, celex_id):
             ?property ?value .
     }}
     """
-
-    # Initialiser le wrapper SPARQL
-    sparql = SPARQLWrapper(endpoint_url) #inject url endpoint
-    sparql.setQuery(query)               # inject query
-    sparql.setReturnFormat(JSON)          # set in json format
-    results = sparql.query().convert()   # run
+    sparql = SPARQLWrapper("https://publications.europa.eu/webapi/rdf/sparql")
+    sparql.setQuery(query)            
+    sparql.setReturnFormat(JSON)         
+    results = sparql.query().convert()   
     return results
